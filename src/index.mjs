@@ -15,6 +15,22 @@ const mockUsers = [
     {id: 7, username: "Bob", displayName: "Bob"}    
 ];
 
+const resolveIndexByUserId = (req, res, next) => {
+    const {params: {id},} = req;
+    const parsedId = parseInt(id);
+    if(isNaN(parsedId)) {
+        res.status(400).send('Invalid id');
+    } 
+    const findUserIndex = mockUsers.findIndex(user => user.id === parsedId);
+    if(findUserIndex === -1) {
+        res.status(404).send('User not found');
+    } else {
+        req.userIndex = findUserIndex;
+        
+    }
+    req.findUserIndex = findUserIndex;
+    next();
+};
 
 app.get('/', (req, res) => {
     res.status(201).send('Hello World');
@@ -47,19 +63,14 @@ app.post('/api/users', (req, res) => {
 });
 
 
-app.get('/api/users/:id', (req, res) => {
-    const parsedId = parseInt(req.params.id);
-    if(isNaN(parsedId)) {
-        res.status(400).send('Invalid id');
+app.get('/api/users/:id', resolveIndexByUserId, (req, res) => {
+    const { findUserIndex } = req;
+    const findUser = mockUsers[findUserIndex];
+    if(findUser) {
+        res.status(201).send(findUser);
     } else {
-        const user = mockUsers.find(u => u.id === parsedId);
-        if(user) {
-            res.status(201).send(user);
-        } else {
-            res.status(404).send('User not found');
-        }
-    }   
-    
+        res.status(404).send('User not found');
+    }    
 }); 
 
 app.get('/api/products', (req, res) => {
@@ -70,6 +81,25 @@ app.get('/api/products', (req, res) => {
     ]);
 });
 
+app.put('/api/users/:id', resolveIndexByUserId, (req, res) => {   
+    const {body, findUserIndex} = req;
+    mockUsers[findUserIndex] = {id: mockUsers[findUserIndex].id, ...body};
+    return res.status(201).send(mockUsers[findUserIndex]);
+
+});
+
+app.patch('/api/users/:id', resolveIndexByUserId, (req, res) => {
+    const {body, findUserIndex} = req;
+    mockUsers[findUserIndex] = {...mockUsers[findUserIndex], ...body};
+    return res.status(201).send(mockUsers[findUserIndex]);
+});
+
+app.delete('/api/users/:id', resolveIndexByUserId, (req, res) => {
+    const {findUserIndex} = req;
+    mockUsers.splice(findUserIndex, 1);
+    return res.status(201).send('User deleted');
+    
+});
 
 
 app.listen(PORT, () => {
