@@ -2,6 +2,7 @@ import { Router } from "express";
 import { mockUsers}  from '../utils/constants.mjs';
 import { resolveIndexByUserId } from '../utils/middlewares.mjs';
 import { User } from "../mongoose/schemas/user.mjs";
+import { hashPassword } from "../utils/helpers.mjs";
 
 const usersRouter = Router();
 
@@ -37,6 +38,7 @@ usersRouter.get('/api/users/:id', resolveIndexByUserId, (req, res) => {
 usersRouter.post('/api/users', async(req, res) => {
     console.log(req.body);
     const { body } = req;
+    body.password = hashPassword(body.password);
     const newUser =  new User(body);
     try {
         const savedUser = await newUser.save();
