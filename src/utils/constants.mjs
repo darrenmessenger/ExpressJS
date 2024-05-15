@@ -1,5 +1,7 @@
+import passport from "passport";
+
 export const mockUsers = [ 
-    {id: 1, username: "John", displayName: "John"},
+    {id: 1, username: "john", displayName: "John", password: "password"},
     {id: 2, username: "Jane", displayName: "Jane"},
     {id: 3, username: "Doe", displayName: "Doe"},
     {id: 4, username: "Smith", displayName: "Smith"},

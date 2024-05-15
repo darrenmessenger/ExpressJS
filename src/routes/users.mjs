@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { mockUsers}  from '../utils/constants.mjs';
 import { resolveIndexByUserId } from '../utils/middlewares.mjs';
+import { User } from "../mongoose/schemas/user.mjs";
 
 const usersRouter = Router();
 
@@ -33,14 +34,18 @@ usersRouter.get('/api/users/:id', resolveIndexByUserId, (req, res) => {
     }    
 }); 
 
-usersRouter.post('/api/users', (req, res) => {
+usersRouter.post('/api/users', async(req, res) => {
     console.log(req.body);
     const { body } = req;
-    const newUser = { id: mockUsers[mockUsers.length - 1].id + 1, ...body };
-    mockUsers.push(newUser);
-    res.status(201).send(newUser);
-}
-);
+    const newUser =  new User(body);
+    try {
+        const savedUser = await newUser.save();
+        return res.status(201).send(savedUser);
+    } catch (error) {
+        res.status(400
+            ).send(error);
+    }   
+});
 
 usersRouter.put('/api/users/:id', resolveIndexByUserId, (req, res) => {   
     const {body, findUserIndex} = req;
